@@ -20,3 +20,16 @@ commands:
       - name: neighbor
         type: string
         description: BGP Neighbor IP
+  show_bgp_ipv4_unicast_community:
+    command: show bgp ipv4 unicast community {community}
+    variables:
+      - name: community
+        type: string
+        description: BGP Community
+  show_bgp_ipv6_unicast_community:
+    command: show bgp ipv6 unicast community {community}
+    variables:
+      - name: community
+        type: string
+        description: BGP Community
+

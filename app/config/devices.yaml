@@ -7,6 +7,8 @@ groups:
       - ping
       - traceroute
       - show_bgp_neighbor
+      - show_bgp_ipv4_unicast_community
+      - show_bgp_ipv6_unicast_community
 
 devices:
   - name: router1
