@@ -1,0 +1,22 @@
+commands:
+  ping:
+    command: ping {host}
+    variables:
+      - name: host
+        type: string
+        description: IP or Hostname
+  traceroute:
+    command: traceroute {host}
+    variables:
+      - name: host
+        type: string
+        description: IP or Hostname
+  show_bgp_summary:
+    command: show bgp summary
+    variables: []
+  show_bgp_neighbor:
+    command: show bgp neighbors {neighbor}
+    variables:
+      - name: neighbor
+        type: string
+        description: BGP Neighbor IP

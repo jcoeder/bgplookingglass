@@ -1,0 +1,19 @@
+groups:
+  home:
+    driver: eos
+    username: admin
+    password: Oeder-8140j
+    allowed_commands:
+      - ping
+      - traceroute
+      - show_bgp_neighbor
+
+devices:
+  - name: router1
+    hostname: 172.31.1.11
+    group: home
+    allowed_commands:
+      - show_bgp_summary
+  - name: router2   
+    hostname: 172.31.1.11
+    group: home

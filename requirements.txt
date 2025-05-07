@@ -1,0 +1,7 @@
+flask
+gunicorn
+napalm
+pyyaml
+python-dotenv
+flask-limiter
+requests
