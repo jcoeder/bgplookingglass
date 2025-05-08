@@ -32,7 +32,7 @@ sudo ./setup.sh
 ```bash
 sudo adduser -r -s /bin/false bgplookingglass
 sudo usermod -s /bin/bash bgplookingglass
-sudo chown bgplookingglass:bgplookingglass /opt/bgplookingglass
+sudo chown -R bgplookingglass:bgplookingglass /opt/bgplookingglass
 
 ### Step 4: Test the app
 ```bash
