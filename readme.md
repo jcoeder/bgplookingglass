@@ -2,7 +2,7 @@
 
 A Flask-based web application for executing network commands on configured devices and retrieving raw output in JSON format. This tool provides a user-friendly interface and API for BGP and network diagnostics.
 
-Repository: [https://github.com/jcoeder/bgplookingglass](https://github.com/jcoeder/bgplookingglass)
+The application uses NAPALM to connect to the network devices so the app shoud support and devices NAPALM supports.  By default this app ships with most of the commands for someone would want for Arista devices but its very easy to add additional commands
 
 ## Prerequisites
 
@@ -51,4 +51,22 @@ sudo systemctl status bgplookingglass
 sudo systemctl restart bgplookingglass
 ```
 
+### Step 6: Setup NGINX
+```bash
+systemctl enable --now nginx
+```
 
+Debian
+```bash
+sudo cp system_files/bgplookingglass.conf /etc/nginx/sites-available/bgplookingglass
+```
+RHEL
+```bash
+sudo cp system_files/bgplookingglass.conf /etc/nginx/conf.d/bgplookingglass.conf
+```
+```bash
+sudo nginx -t
+```
+```bash
+sudo systemctl reload nginx
+```
