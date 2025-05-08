@@ -58,6 +58,8 @@ systemctl enable --now nginx
 
 Generate a self-signed certificate for testing
 ```bash
+sudo mkdir -p /etc/ssl/private
+sudo chmod 700 /etc/ssl/private
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/bgplookingglass.key -out /etc/ssl/certs/bgplookingglass.crt
 ```
 
