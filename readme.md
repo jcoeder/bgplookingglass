@@ -19,7 +19,7 @@ This guide will walk you through setting up the BGP Looking Glass app as a non-r
 ### Step 1: Clone the repository
 ```bash
 cd /opt
-git clone https://github.com/jcoeder/bgplookingglass
+git clone git@github.com:jcoeder/bgplookingglass.git
 ```
 
 ### Step 2: Install dependencies and setup the environment
