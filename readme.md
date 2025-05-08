@@ -52,6 +52,7 @@ sudo systemctl restart bgplookingglass
 ```
 
 ### Step 6: Setup NGINX
+Start and enable the service
 ```bash
 systemctl enable --now nginx
 ```
@@ -64,9 +65,13 @@ RHEL
 ```bash
 sudo cp system_files/bgplookingglass.conf /etc/nginx/conf.d/bgplookingglass.conf
 ```
+
+Test the conig
 ```bash
 sudo nginx -t
 ```
+
+Apply the config
 ```bash
 sudo systemctl reload nginx
 ```
