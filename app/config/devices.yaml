@@ -1,8 +1,8 @@
 groups:
   home:
     driver: eos
-    username: admin
-    password: Oeder-8140j
+    username: test
+    password: test
     allowed_commands:
       - ping
       - traceroute

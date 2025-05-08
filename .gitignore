@@ -12,13 +12,18 @@ __pycache__/
 build/
 dist/
 *.egg-info/
+
+# Virtual environment directories
 venv/
 .venv/
-
-# Virtual environment
 env/
-venv.bak/
+env.bak/
 pyvenv.cfg
+
+# Environment variables and configuration files
+.env
+.env.*
+.envrc
 
 # IDE and editor files
 .idea/
@@ -40,11 +45,11 @@ config.py  # If you have a local config file
 # Project-specific files
 app/logs/  # If you have logs in this directory
 secrets.py  # Any files with sensitive data
-devices.yaml  # If you don't want to track this (or use it as a template)
-commands.yaml  # Same as above
+devices.yaml  # If you don't want to track this
+commands.yaml  # If you don't want to track this
 
-# Dependency files (if not tracking them)
-Pipfile.lock  # Or requirements.txt if managed separately
+# Dependency files
+Pipfile.lock
 
 # Temporary files
 *.tmp
