@@ -33,7 +33,6 @@ sudo ./setup.sh
 sudo adduser -r -s /bin/false bgplookingglass
 sudo usermod -s /bin/bash bgplookingglass
 sudo chown bgplookingglass:bgplookingglass /opt/bgplookingglass
-```
 
 ### Step 4: Test the app
 ```bash
@@ -57,6 +56,11 @@ Start and enable the service
 systemctl enable --now nginx
 ```
 
+Generate a self-signed certificate for testing
+```bash
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/bgplookingglass.key -out /etc/ssl/certs/bgplookingglass.crt
+```
+
 Debian
 ```bash
 sudo cp system_files/bgplookingglass.conf /etc/nginx/sites-available/bgplookingglass
@@ -64,6 +68,7 @@ sudo cp system_files/bgplookingglass.conf /etc/nginx/sites-available/bgplookingg
 RHEL
 ```bash
 sudo cp system_files/bgplookingglass.conf /etc/nginx/conf.d/bgplookingglass.conf
+sudo setsebool -P httpd_can_network_connect 1
 ```
 
 Test the conig
