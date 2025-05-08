@@ -82,3 +82,10 @@ Apply the config
 ```bash
 sudo systemctl reload nginx
 ```
+
+### Step 7: Setup Firewall
+Open port 80 and or 443
+or run this script to attempt it for you
+```bash
+sudo ./firewall.sh
+```
