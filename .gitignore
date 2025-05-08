@@ -1,9 +1,12 @@
 # .gitignore for Python Flask Project
 
-# Byte-compiled / optimized files
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+*.pyd
+*.pyo
 
 # C extensions
 *.so
