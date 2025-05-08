@@ -33,12 +33,15 @@ sudo ./setup.sh
 sudo adduser -r -s /bin/false bgplookingglass
 sudo usermod -s /bin/bash bgplookingglass
 sudo chown -R bgplookingglass:bgplookingglass /opt/bgplookingglass
+```
 
 ### Step 4: Test the app
 ```bash
 source venv/bin/activate
 gunicorn --workers 3 --bind 0.0.0.0:5000 --log-level debug wsgi:app
 ```
+Just make sure it doesn't error out.  Firewall will prevent port 5000 from loading.
+
 The app should be running at http://{{IP}}:5000
 
 ### Step 5: Configure systemd
