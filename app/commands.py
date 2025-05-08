@@ -77,7 +77,12 @@ class BGPLookingGlass:
             return {"error": "Command not found"}
 
         if variables:
-            cleaned_variables = {k.replace('variables[', '').replace(']', ''): v for k, v in variables.items() if k.startswith('variables[')}
+            # Handle both API (direct dict) and form data (variables[key])
+            cleaned_variables = {}
+            if any(k.startswith('variables[') for k in variables.keys()):
+                cleaned_variables = {k.replace('variables[', '').replace(']', ''): v for k, v in variables.items() if k.startswith('variables[')}
+            else:
+                cleaned_variables = variables
             logging.debug(f"Cleaned variables for execution: {cleaned_variables}")
             valid, error = self.validate_variables(command_name, cleaned_variables)
             if not valid:
@@ -124,3 +129,4 @@ class BGPLookingGlass:
         except Exception as e:
             logging.error(f"Error executing command: {str(e)}")
             return {"error": str(e)}
+

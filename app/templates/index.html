@@ -65,9 +65,27 @@
             display: none;
             margin-top: 20px;
         }
+        .navbar {
+            background-color: #2c3e50;
+            padding: 10px 0;
+        }
+        .navbar a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+        .navbar a:hover {
+            color: #3498db;
+        }
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="container-fluid justify-content-center">
+            <a href="/">Home</a>
+            <a href="/api">API Documentation</a>
+        </div>
+    </nav>
     <div class="container">
         <h1><i class="fas fa-network-wired me-2"></i>BGP Looking Glass</h1>
         <form id="bgpForm">
@@ -242,3 +260,4 @@
     </script>
 </body>
 </html>
+

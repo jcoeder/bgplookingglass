@@ -66,10 +66,13 @@ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/privat
 Debian
 ```bash
 sudo cp system_files/bgplookingglass.conf /etc/nginx/sites-available/bgplookingglass
+sudo ln -s /etc/nginx/sites-available/bgplookingglass /etc/nginx/sites-enabled/
 ```
+
 RHEL
 ```bash
 sudo cp system_files/bgplookingglass.conf /etc/nginx/conf.d/bgplookingglass.conf
+cp system_files/nginx.conf /etc/nginx/nginx.conf
 sudo setsebool -P httpd_can_network_connect 1
 ```
 
