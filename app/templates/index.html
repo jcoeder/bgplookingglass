@@ -55,9 +55,6 @@
             max-height: 400px;
             overflow-y: auto;
             font-family: 'Courier New', Courier, monospace;
-        }
-        #result pre {
-            margin: 0;
             white-space: pre-wrap;
             word-wrap: break-word;
         }
@@ -87,7 +84,7 @@
                     {% endfor %}
                 </select>
             </div>
-            
+
             <div class="mb-3">
                 <label for="command" class="form-label">Select Command</label>
                 <select name="command" id="command" class="form-select" required>
@@ -116,19 +113,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Store variable values to preserve them across command changes
             var variableValues = {};
 
-            // Save variable values when inputs change
             $('#variables').on('input', 'input', function() {
                 var name = $(this).attr('name');
                 variableValues[name] = $(this).val();
             });
 
-            // Update commands when device changes
             $('#device').change(function() {
                 var device = $(this).val();
-                console.log('Device selected:', device);
+                console.log('Device selected:', device);  // Debug log
                 if (!device) {
                     $('#command').empty().append('<option value="" disabled selected>Select a command</option>');
                     $('#variables').empty();
@@ -139,27 +133,28 @@
                     url: '/get_allowed_commands',
                     data: {device: device},
                     success: function(data) {
+                        console.log('Commands data received:', data);  // Debug log for full response
                         var commandSelect = $('#command');
                         commandSelect.empty().append('<option value="" disabled selected>Select a command</option>');
-                        if (data.commands) {
+                        if (data.commands && Object.keys(data.commands).length > 0) {
                             $.each(data.commands, function(cmd_name, cmd) {
-                                commandSelect.append($('<option>').val(cmd_name).text(cmd_name));
+                                var displayText = cmd.display_name || cmd_name;  // Use display_name if available
+                                commandSelect.append($('<option>').val(cmd_name).text(displayText));
                             });
+                        } else {
+                            console.error('No commands in response or response is empty:', data);  // More detailed error log
                         }
-                        console.log('Commands loaded:', data.commands);
                         $('#command').trigger('change');
                     },
                     error: function(xhr) {
-                        console.error('Error loading commands:', xhr.responseText);
-                        $('#result').html('<div class="alert alert-danger">Error loading commands</div>');
+                        console.error('Error loading commands:', xhr.responseText, xhr.status);  // Error log with status
+                        $('#result').html('<div class="alert alert-danger">Error loading commands: ' + xhr.status + '</div>');
                     }
                 });
             });
 
-            // Load variables when command changes
             $('#command').change(function() {
                 var command = $(this).val();
-                console.log('Command selected:', command);
                 if (!command) {
                     $('#variables').empty();
                     return;
@@ -181,7 +176,6 @@
                                 `);
                             });
                         }
-                        console.log('Variables loaded:', data.variables);
                     },
                     error: function(xhr) {
                         console.error('Error loading variables:', xhr.responseText);
@@ -190,16 +184,13 @@
                 });
             });
 
-            // Form submission
             $('#bgpForm').submit(function(e) {
                 e.preventDefault();
                 var formData = $(this).serialize();
-                console.log('Form data submitted:', formData);
                 var device = $('#device').val();
                 var command = $('#command').val();
                 if (!device || !command) {
                     $('#result').html('<div class="alert alert-danger">Please select a device and command</div>');
-                    console.error('Invalid form submission: device or command missing');
                     return;
                 }
                 $('#loading').show();
@@ -209,20 +200,18 @@
                     type: 'POST',
                     data: formData,
                     success: function(data) {
-                        // Display human-readable output
+                        console.log('Execute response:', data);  // Add debug log for execute response
                         if (data.error) {
-                            $('#result').html(`<div class="alert alert-danger">${data.error}</div>`);
+                            $('#result').html('<div class="alert alert-danger">' + data.error + '</div>');
+                        } else if (data.output) {
+                            $('#result').text(data.output);
                         } else {
-                            // Escape HTML to prevent XSS and preserve formatting
-                            var output = $('<div>').text(data.output).html();
-                            $('#result').html(`<pre>${output}</pre>`);
+                            $('#result').html('<div class="alert alert-warning">No output returned.</div>');
                         }
-                        console.log('Command output:', data);
                     },
                     error: function(xhr) {
-                        var errorMsg = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Error executing command';
-                        $('#result').html(`<div class="alert alert-danger">${errorMsg}</div>`);
-                        console.error('Error executing command:', xhr.responseText);
+                        var errorMsg = xhr.responseJSON ? xhr.responseJSON.error : 'Error executing command';
+                        $('#result').html('<div class="alert alert-danger">' + errorMsg + '</div>');
                     },
                     complete: function() {
                         $('#loading').hide();
@@ -230,10 +219,8 @@
                     }
                 });
             });
-
-            // Trigger initial device change to populate commands
-            $('#device').trigger('change');
         });
     </script>
 </body>
 </html>
+

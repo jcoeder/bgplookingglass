@@ -1,0 +1,55 @@
+# .gitignore for Python Flask Project
+
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+venv/
+.venv/
+
+# Virtual environment
+env/
+venv.bak/
+pyvenv.cfg
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Flask specific
+instance/
+webassets-cache/
+*.db  # e.g., SQLite databases
+config.py  # If you have a local config file
+
+# Project-specific files
+app/logs/  # If you have logs in this directory
+secrets.py  # Any files with sensitive data
+devices.yaml  # If you don't want to track this (or use it as a template)
+commands.yaml  # Same as above
+
+# Dependency files (if not tracking them)
+Pipfile.lock  # Or requirements.txt if managed separately
+
+# Temporary files
+*.tmp
+*.bak
+
+# Gunicorn and server logs
+gunicorn.log
+error.log

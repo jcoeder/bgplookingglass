@@ -1,23 +1,21 @@
-from flask import Flask
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-import os
-from dotenv import load_dotenv
+# Source: app/__init__.py
+# Published: 5/9/2025, 10:00:00 PM (updated)
 
-load_dotenv()
+from flask import Flask
+from .routes import bp  # Import the Blueprint
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key')
-
-    # Rate limiting
-    limiter = Limiter(
-        app=app,
-        key_func=get_remote_address,
-        default_limits=["200 per day", "50 per hour"]
-    )
-
-    from .routes import bp as main_bp
-    app.register_blueprint(main_bp)
-
+    
+    # Register the Blueprint
+    app.register_blueprint(bp, url_prefix='/')
+    
+    # Optional configurations (no Flasgger here)
+    app.config['SECRET_KEY'] = 'your_secret_key_here'  # Replace with a secure string
+    
     return app
+
+# For local testing
+if __name__ == '__main__':
+    app = create_app()
+    app.run(debug=True)

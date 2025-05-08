@@ -1,3 +1,6 @@
+# Source: commands.py (renamed from bgp.py)
+# Published: 5/8/2025, 10:00:00 AM (updated)
+
 from napalm import get_network_driver
 import yaml
 import os
@@ -89,9 +92,9 @@ class BGPLookingGlass:
                 username=device_config['username'],
                 password=device_config['password']
             ) as device:
-                output = device.cli([command])
-                logging.debug(f"Command output: {output[command]}")
-                return {"output": output[command]}
+                output = device.cli([command])  # Raw Napalm output: e.g., {'command': 'raw string'}
+                logging.debug(f"Command output: {output}")
+                return output  # Return the full raw Napalm dictionary
         except Exception as e:
             logging.error(f"Error executing command: {str(e)}")
             return {"error": str(e)}
