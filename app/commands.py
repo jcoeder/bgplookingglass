@@ -21,6 +21,32 @@ class BGPLookingGlass:
     def process_devices(self):
         devices = []
         groups = self.devices_config.get('groups', {})
+
+        def get_group_settings(group_name, visited=None):
+            """Recursively get settings for a group, merging with parent group settings."""
+            if visited is None:
+                visited = set()  # Track visited groups to prevent cycles
+            if group_name in visited:
+                logging.warning(f"Cycle detected in group hierarchy for group: {group_name}")
+                return {}
+            visited.add(group_name)
+
+            if group_name not in groups:
+                return {}
+
+            group_data = groups[group_name].copy()
+            parent_name = group_data.get('parent')
+            if parent_name:
+                parent_settings = get_group_settings(parent_name, visited)
+                # Merge parent settings with current group, current group takes precedence
+                for key, value in group_data.items():
+                    if key in parent_settings and isinstance(value, list):
+                        parent_settings[key] = list(set(parent_settings[key] + value))
+                    else:
+                        parent_settings[key] = value
+                return parent_settings
+            return group_data
+
         for device in self.devices_config.get('devices', []):
             group_name = device.get('group', 'ungrouped')
             device_settings = device.copy()
@@ -29,17 +55,22 @@ class BGPLookingGlass:
             device_allowed_commands = device.get('allowed_commands', [])
             device_disallowed_commands = device.get('disallowed_commands', [])
 
-            if group_name in groups:
-                group_settings = groups[group_name].copy()
-                group_allowed_commands = group_settings.get('allowed_commands', [])
-                group_disallowed_commands = group_settings.get('disallowed_commands', [])
-                combined_allowed = list(set(group_allowed_commands + device_allowed_commands) - set(group_disallowed_commands + device_disallowed_commands))
-                for key, value in device.items():
-                    group_settings[key] = value
-                group_settings['group'] = group_name
-                group_settings['allowed_commands'] = combined_allowed
-                group_settings['disallowed_commands'] = list(set(group_disallowed_commands + device_disallowed_commands))
-                devices.append(group_settings)
+            if group_name in groups or group_name != 'ungrouped':
+                group_settings = get_group_settings(group_name)
+                if group_settings:
+                    group_allowed_commands = group_settings.get('allowed_commands', [])
+                    group_disallowed_commands = group_settings.get('disallowed_commands', [])
+                    combined_allowed = list(set(group_allowed_commands + device_allowed_commands) - set(group_disallowed_commands + device_disallowed_commands))
+                    for key, value in device.items():
+                        group_settings[key] = value
+                    group_settings['group'] = group_name
+                    group_settings['allowed_commands'] = combined_allowed
+                    group_settings['disallowed_commands'] = list(set(group_disallowed_commands + device_disallowed_commands))
+                    devices.append(group_settings)
+                else:
+                    device_settings['allowed_commands'] = list(set(device_allowed_commands) - set(device_disallowed_commands))
+                    device_settings['disallowed_commands'] = device_disallowed_commands
+                    devices.append(device_settings)
             else:
                 device_settings['allowed_commands'] = list(set(device_allowed_commands) - set(device_disallowed_commands))
                 device_settings['disallowed_commands'] = device_disallowed_commands
@@ -129,4 +160,3 @@ class BGPLookingGlass:
         except Exception as e:
             logging.error(f"Error executing command: {str(e)}")
             return {"error": str(e)}
-

@@ -1,5 +1,5 @@
 groups:
-  home:
+  eos:
     driver: eos
     username: test
     password: test
@@ -13,7 +13,10 @@ groups:
       - show_bgp_ipv6_unicast_community
       - show_ip_bgp_as_path_regex
       - show_ipv6_bgp_regex
-
+  nor1:
+    parent: eos
+  home:
+    parent: eos
 
 devices:
   - name: router1
@@ -27,3 +30,14 @@ devices:
   - name: router2   
     hostname: 172.31.1.11
     group: home
+  - name: router3
+    hostname: 172.31.1.11
+    group: nor1
+    allowed_commands:
+      - show_bgp_summary
+    disallowed_commands:
+      - ping
+      - traceroute
+  - name: router4
+    hostname: 172.31.1.11
+    group: nor1
