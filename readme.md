@@ -16,11 +16,39 @@ Repository: [https://github.com/jcoeder/bgplookingglass](https://github.com/jcoe
 
 This guide will walk you through setting up the BGP Looking Glass app as a non-root user named `bgplookingglass`, installing it in `/opt/bgplookingglass`, and configuring it to run as a systemd service with Nginx as a reverse proxy. Instructions are provided for both RHEL and Ubuntu systems.
 
-### Step 1: Create a Non-Root User
-
-Log in as a user with sudo privileges and create a new system user named `bgplookingglass`:
-
+### Step 1: Clone the repository
 ```bash
-sudo adduser --system --group --home /home/bgplookingglass bgplookingglass
-sudo usermod -s /bin/bash bgplookingglass
+cd /opt
+git clone https://github.com/jcoeder/bgplookingglass
 ```
+
+### Step 2: Install dependencies and setup the environment
+```bash
+cd bgplookingglass
+sudo ./setup.sh
+```
+
+### Step 3: Create a Non-Root User and change file owners
+```bash
+sudo adduser -r -s /bin/false bgplookingglass
+sudo usermod -s /bin/bash bgplookingglass
+sudo chown bgplookingglass:bgplookingglass /opt/bgplookingglass
+```
+
+### Step 4: Test the app
+```bash
+source venv/bin/activate
+gunicorn --workers 3 --bind 0.0.0.0:8000 --log-level debug wsgi:app
+```
+The app should be running at http://{{IP}}:8000
+
+### Step 5: Configure systemd
+```bash
+sudo cp system_files/bgplookingglass.service /etc/systemd/system/bgplookingglass.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now bgplookingglass
+sudo systemctl status bgplookingglass
+sudo systemctl restart bgplookingglass
+```
+
+

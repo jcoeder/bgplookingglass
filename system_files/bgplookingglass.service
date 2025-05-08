@@ -7,7 +7,13 @@ User=bgplookingglass
 Group=bgplookingglass
 WorkingDirectory=/opt/bgplookingglass
 Environment="PATH=/opt/bgplookingglass/venv/bin"
-ExecStart=/opt/bgplookingglass/venv/bin/gunicorn --workers 3 --bind unix:/opt/bgplookingglass/bgplookingglass.sock app:app
+Environment="FLASK_ENV=production"
+ExecStart=/opt/bgplookingglass/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 wsgi:app
+Restart=always
+RestartSec=5
+SyslogIdentifier=bgplookingglass
+TimeoutStartSec=300
+TimeoutStopSec=300
 
 [Install]
 WantedBy=multi-user.target
