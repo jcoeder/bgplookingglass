@@ -38,9 +38,9 @@ sudo chown bgplookingglass:bgplookingglass /opt/bgplookingglass
 ### Step 4: Test the app
 ```bash
 source venv/bin/activate
-gunicorn --workers 3 --bind 0.0.0.0:8000 --log-level debug wsgi:app
+gunicorn --workers 3 --bind 0.0.0.0:5000 --log-level debug wsgi:app
 ```
-The app should be running at http://{{IP}}:8000
+The app should be running at http://{{IP}}:5000
 
 ### Step 5: Configure systemd
 ```bash
