@@ -47,9 +47,9 @@ commands:
       - name: community
         type: string
         description: BGP Community
-  show_ipv6_bgp_community:
-    display_name: "show ipv6 bgp community {community}"
-    command: show ipv6 bgp community {community}
+  show_bgp_ipv6_unicast_community:
+    display_name: "show bgp ipv6 unicast community {community}"
+    command: show bgp ipv6 unicast community {community}
     variables:
       - name: community
         type: string
@@ -61,9 +61,9 @@ commands:
       - name: as-path-regex
         type: string
         description: AS Path Regex
-  show_ipv6_bgp_as_path_regex:
-    display_name: "show ipv6 bgp as-path regex {as-path-regex}"
-    command: show ipv6 bgp as-path regex {as-path-regex}
+  show_ipv6_bgp_regex:
+    display_name: "show ipv6 bgp regex {as-path-regex}"
+    command: show ipv6 bgp regex {as-path-regex}
     variables:
       - name: as-path-regex
         type: string

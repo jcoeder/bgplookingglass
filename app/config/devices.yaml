@@ -10,9 +10,9 @@ groups:
       - show_ip_bgp_prefix
       - show_ipv6_bgp_prefix
       - show_ip_bgp_community
-      - show_ipv6_bgp_community
+      - show_bgp_ipv6_unicast_community
       - show_ip_bgp_as_path_regex
-      - show_ipv6_bgp_as_path_regex
+      - show_ipv6_bgp_regex
 
 
 devices:
@@ -21,6 +21,9 @@ devices:
     group: home
     allowed_commands:
       - show_bgp_summary
+    disallowed_commands:
+      - ping
+      - traceroute
   - name: router2   
     hostname: 172.31.1.11
     group: home

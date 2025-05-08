@@ -1,14 +1,12 @@
-# Source: commands.py (renamed from bgp.py)
-# Published: 5/8/2025, 10:00:00 AM (updated)
-
 from napalm import get_network_driver
 import yaml
 import os
 import re
+from app_config import AppConfig
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=AppConfig.LOG_LEVEL, format=AppConfig.LOG_FORMAT)
 
 class BGPLookingGlass:
     def __init__(self):
@@ -29,18 +27,22 @@ class BGPLookingGlass:
             device_settings['group'] = group_name
 
             device_allowed_commands = device.get('allowed_commands', [])
+            device_disallowed_commands = device.get('disallowed_commands', [])
 
             if group_name in groups:
                 group_settings = groups[group_name].copy()
                 group_allowed_commands = group_settings.get('allowed_commands', [])
-                combined_commands = list(set(group_allowed_commands + device_allowed_commands))
+                group_disallowed_commands = group_settings.get('disallowed_commands', [])
+                combined_allowed = list(set(group_allowed_commands + device_allowed_commands) - set(group_disallowed_commands + device_disallowed_commands))
                 for key, value in device.items():
                     group_settings[key] = value
                 group_settings['group'] = group_name
-                group_settings['allowed_commands'] = combined_commands
+                group_settings['allowed_commands'] = combined_allowed
+                group_settings['disallowed_commands'] = list(set(group_disallowed_commands + device_disallowed_commands))
                 devices.append(group_settings)
             else:
-                device_settings['allowed_commands'] = device_allowed_commands
+                device_settings['allowed_commands'] = list(set(device_allowed_commands) - set(device_disallowed_commands))
+                device_settings['disallowed_commands'] = device_disallowed_commands
                 devices.append(device_settings)
         logging.debug(f"Processed devices: {[d['name'] for d in devices]}")
         return {'devices': devices}
@@ -49,10 +51,10 @@ class BGPLookingGlass:
         command_config = self.commands['commands'].get(command_name, {})
         for var in command_config.get('variables', []):
             var_name = var['name']
-            regex = var.get('regex')
-            if var_name in variables and regex:
-                if not re.match(regex, variables[var_name]):
-                    return False, f"Invalid input for {var_name}"
+            if var_name not in variables or not variables[var_name]:
+                if var.get('required', False):
+                    logging.debug(f"Missing required variable: {var_name}")
+                    return False, f"Missing required variable: {var_name}"
         return True, None
 
     def get_device_output(self, device_name, command_name, variables=None):
@@ -65,6 +67,9 @@ class BGPLookingGlass:
         if command_name not in device_config.get('allowed_commands', []):
             logging.warning(f"Command not allowed: {command_name} for device {device_name}")
             return {"error": "Command not allowed"}
+        if command_name in device_config.get('disallowed_commands', []):
+            logging.warning(f"Command disallowed: {command_name} for device {device_name}")
+            return {"error": "Command disallowed"}
 
         command_config = self.commands['commands'].get(command_name)
         if not command_config:
@@ -72,18 +77,33 @@ class BGPLookingGlass:
             return {"error": "Command not found"}
 
         if variables:
-            valid, error = self.validate_variables(command_name, variables)
+            cleaned_variables = {k.replace('variables[', '').replace(']', ''): v for k, v in variables.items() if k.startswith('variables[')}
+            logging.debug(f"Cleaned variables for execution: {cleaned_variables}")
+            valid, error = self.validate_variables(command_name, cleaned_variables)
             if not valid:
                 logging.error(f"Validation error: {error}")
                 return {"error": error}
+        else:
+            cleaned_variables = {}
+            logging.debug("No variables provided")
 
         command = command_config['command']
-        if variables:
+        logging.debug(f"Original command: {command}")
+        if cleaned_variables:
             try:
-                command = command.format(**variables)
-            except KeyError:
-                logging.error("Invalid variables provided")
-                return {"error": "Invalid variables"}
+                formatted_command = command.format(**cleaned_variables)
+                logging.debug(f"Formatted command: {formatted_command}")
+                command = formatted_command
+            except KeyError as e:
+                logging.error(f"Variable substitution failed: missing or invalid variable {e}")
+                return {"error": f"Missing or invalid variable: {e}"}
+            except ValueError as e:
+                logging.error(f"Command formatting error: {e}")
+                return {"error": f"Command formatting error: {e}"}
+        else:
+            if '{' in command and '}' in command:
+                logging.error(f"Command requires variables but none provided: {command}")
+                return {"error": "Command requires variables but none provided"}
 
         try:
             driver = get_network_driver(device_config['driver'])
@@ -92,9 +112,15 @@ class BGPLookingGlass:
                 username=device_config['username'],
                 password=device_config['password']
             ) as device:
-                output = device.cli([command])  # Raw Napalm output: e.g., {'command': 'raw string'}
+                output = device.cli([command])
                 logging.debug(f"Command output: {output}")
-                return output  # Return the full raw Napalm dictionary
+                # Ensure the output is a string, even if it's a dictionary or list
+                if isinstance(output, dict):
+                    # Extract the output for the specific command if it's a dictionary
+                    output = output.get(command, str(output))
+                elif isinstance(output, list):
+                    output = "\n".join(output)
+                return {"output": str(output)}
         except Exception as e:
             logging.error(f"Error executing command: {str(e)}")
             return {"error": str(e)}
