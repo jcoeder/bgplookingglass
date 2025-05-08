@@ -1,0 +1,13 @@
+[Unit]
+Description=BGP Looking Glass Flask Application
+After=network.target
+
+[Service]
+User=bgplookingglass
+Group=bgplookingglass
+WorkingDirectory=/opt/bgplookingglass
+Environment="PATH=/opt/bgplookingglass/venv/bin"
+ExecStart=/opt/bgplookingglass/venv/bin/gunicorn --workers 3 --bind unix:/opt/bgplookingglass/bgplookingglass.sock app:app
+
+[Install]
+WantedBy=multi-user.target
