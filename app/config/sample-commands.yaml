@@ -1,0 +1,70 @@
+commands:
+  ping:
+    display_name: ping
+    command: ping {host}
+    variables:
+      - name: host
+        type: string
+        description: IP or Hostname
+  traceroute:
+    display_name: traceroute
+    command: traceroute {host}
+    variables:
+      - name: host
+        type: string
+        description: IP or Hostname
+  show_bgp_summary:
+    display_name: show bgp summary
+    command: show bgp summary
+    variables: []
+  show_bgp_neighbor:
+    display_name: "show bgp neighbors {neighbor}" 
+    command: show bgp neighbors {neighbor}
+    variables:
+      - name: neighbor
+        type: string
+        description: BGP Neighbor IP
+  show_ip_bgp_prefix:
+    display_name: "show ip bgp {prefix}"
+    command: show ip bgp {prefix}
+    variables:
+      - name: prefix
+        type: string
+        description: IPv4 Prefix
+        regex: '^(([0-9]{1,3}\.){3}[0-9]{1,3}(/[0-9]{1,2})?)$'
+  show_ipv6_bgp_prefix:
+    display_name: "show ipv6 bgp {prefix}"
+    command: show ipv6 bgp {prefix}
+    variables:
+      - name: prefix
+        type: string
+        description: IPv6 Prefix
+        regex: '^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|\s*((([0-9a-fA-F]{1,4}:){1,4}):|(([0-9a-fA-F]{1,4}:){1,3}:[0-9a-fA-F]{1,4})|(([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,2})|([0-9a-fA-F]{1,4}:)((:[0-9a-fA-F]{1,4}){1,3})|:((:[0-9a-fA-F]{1,4}){1,4}))(%.+)?|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])(%.+)?|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))(/([0-9]{1,3}))?$'
+  show_ip_bgp_community:
+    display_name: "show ip bgp community {community}"
+    command: show ip bgp community {community}
+    variables:
+      - name: community
+        type: string
+        description: BGP Community
+  show_bgp_ipv6_unicast_community:
+    display_name: "show bgp ipv6 unicast community {community}"
+    command: show bgp ipv6 unicast community {community}
+    variables:
+      - name: community
+        type: string
+        description: BGP Community
+  show_ip_bgp_as_path_regex:
+    display_name: "show ip bgp as-path regex {as-path-regex}"
+    command: show ip bgp as-path regex {as-path-regex}
+    variables:
+      - name: as-path-regex
+        type: string
+        description: AS Path Regex
+  show_ipv6_bgp_regex:
+    display_name: "show ipv6 bgp regex {as-path-regex}"
+    command: show ipv6 bgp regex {as-path-regex}
+    variables:
+      - name: as-path-regex
+        type: string
+        description: AS Path Regex
