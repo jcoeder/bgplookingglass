@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BGP Looking Glass</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin-top: 50px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #34495e;
+        }
+        .form-select, .form-control {
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            padding: 10px;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        #variables {
+            margin-top: 20px;
+        }
+        #result {
+            margin-top: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .input-group-text {
+            background-color: #e9ecef;
+        }
+        #loading {
+            display: none;
+            margin-top: 20px;
+        }
+        .navbar {
+            background-color: #2c3e50;
+            padding: 10px 0;
+        }
+        .navbar a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+        .navbar a:hover {
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container-fluid justify-content-center">
+            <a href="/">Home</a>
+            <a href="/api">API Documentation</a>
+        </div>
+    </nav>
+    <div class="container">
+        <h1><i class="fas fa-network-wired me-2"></i>BGP Looking Glass</h1>
+        <form id="bgpForm">
+            <div class="mb-3">
+                <label for="device" class="form-label">Select Device</label>
+                <select name="device" id="device" class="form-select" required>
+                    <option value="" disabled selected>Choose a device</option>
+                    {% for group_name, group_devices in devices|groupby('group') %}
+                    <optgroup label="{{ group_name|default('Ungrouped') }}">
+                        {% for device in group_devices %}
+                        <option value="{{ device.name }}">{{ device.name }}</option>
+                        {% endfor %}
+                    </optgroup>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="command" class="form-label">Select Command</label>
+                <select name="command" id="command" class="form-select" required>
+                    <option value="" disabled selected>Select a command</option>
+                </select>
+            </div>
+            <div id="variables" class="mb-3"></div>
+            <button type="submit" class="btn btn-primary" id="executeBtn">
+                <i class="fas fa-play me-2"></i>Execute
+            </button>
+        </form>
+        <div id="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <span class="ms-2">Running command, please wait...</span>
+        </div>
+        <div id="result" class="mt-4"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const bgpForm = document.getElementById('bgpForm');
+            const deviceSelect = document.getElementById('device');
+            const commandSelect = document.getElementById('command');
+            const variablesDiv = document.getElementById('variables');
+            const resultDiv = document.getElementById('result');
+            const executeBtn = document.getElementById('executeBtn');
+            const loadingDiv = document.getElementById('loading');
+            let variableValues = {};
+
+            // Ensure no device is selected on page load or refresh
+            deviceSelect.value = '';
+
+            // Update variableValues when input changes
+            variablesDiv.addEventListener('input', (e) => {
+                if (e.target.tagName === 'INPUT') {
+                    const varName = e.target.name.replace('variables[', '').replace(']', '');
+                    variableValues[varName] = e.target.value.trim();
+                    console.log('Updated variableValues:', variableValues);
+                }
+            });
+
+            deviceSelect.addEventListener('change', async () => {
+                const device = deviceSelect.value;
+                console.log('Device selected:', device);
+                if (!device) {
+                    commandSelect.innerHTML = '<option value="" disabled selected>Select a command</option>';
+                    variablesDiv.innerHTML = '';
+                    variableValues = {};
+                    return;
+                }
+                try {
+                    const response = await fetch(`/get_allowed_commands?device=${encodeURIComponent(device)}`);
+                    const data = await response.json();
+                    console.log('Commands data received:', data);
+                    commandSelect.innerHTML = '<option value="" disabled selected>Select a command</option>';
+                    if (data.commands && Object.keys(data.commands).length > 0) {
+                        for (const [cmd_name, cmd] of Object.entries(data.commands)) {
+                            const displayText = cmd.display_name || cmd_name;
+                            const option = document.createElement('option');
+                            option.value = cmd_name;
+                            option.textContent = displayText;
+                            commandSelect.appendChild(option);
+                        }
+                    } else {
+                        console.error('No commands in response:', data);
+                    }
+                    commandSelect.dispatchEvent(new Event('change'));
+                } catch (error) {
+                    console.error('Error loading commands:', error);
+                    resultDiv.innerHTML = `<div class="alert alert-danger">Error loading commands: ${error.message}</div>`;
+                }
+            });
+
+            commandSelect.addEventListener('change', async () => {
+                const command = commandSelect.value;
+                if (!command) {
+                    variablesDiv.innerHTML = '';
+                    variableValues = {};
+                    return;
+                }
+                try {
+                    const response = await fetch(`/get_variables?command=${encodeURIComponent(command)}`);
+                    const data = await response.json();
+                    variablesDiv.innerHTML = '';
+                    variableValues = {}; // Reset variableValues for new command
+                    if (data.variables) {
+                        data.variables.forEach(varObj => {
+                            const inputValue = variableValues[varObj.name] || '';
+                            const div = document.createElement('div');
+                            div.className = 'input-group mb-2';
+                            div.innerHTML = `
+                                <span class="input-group-text">${varObj.name}</span>
+                                <input type="text" name="variables[${varObj.name}]" class="form-control" placeholder="Enter ${varObj.name}" value="${inputValue}">
+                            `;
+                            variablesDiv.appendChild(div);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading variables:', error);
+                    resultDiv.innerHTML = '<div class="alert alert-danger">Error loading variables</div>';
+                }
+            });
+
+            bgpForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const device = deviceSelect.value;
+                const command = commandSelect.value;
+                if (!device || !command) {
+                    resultDiv.innerHTML = '<div class="alert alert-danger">Please select a device and command</div>';
+                    return;
+                }
+                const formData = new FormData();
+                formData.append('device', device);
+                formData.append('command', command);
+                // Include all variables, even empty ones, to ensure server receives them
+                Object.entries(variableValues).forEach(([key, value]) => {
+                    formData.append(`variables[${key}]`, value || '');
+                });
+
+                console.log('Form data to send:', Object.fromEntries(formData));
+
+                loadingDiv.style.display = 'block';
+                deviceSelect.disabled = true;
+                commandSelect.disabled = true;
+                variablesDiv.querySelectorAll('input').forEach(input => input.disabled = true);
+                executeBtn.disabled = true;
+
+                try {
+                    const response = await fetch('/execute', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    console.log('Execute response:', data);
+                    if (data.error) {
+                        resultDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                    } else if (data.output) {
+                        resultDiv.textContent = data.output;
+                    } else {
+                        resultDiv.innerHTML = '<div class="alert alert-warning">No output returned.</div>';
+                    }
+                } catch (error) {
+                    console.error('Error executing command:', error);
+                    resultDiv.innerHTML = `<div class="alert alert-danger">Error executing command: ${error.message}</div>`;
+                } finally {
+                    loadingDiv.style.display = 'none';
+                    deviceSelect.disabled = false;
+                    commandSelect.disabled = false;
+                    variablesDiv.querySelectorAll('input').forEach(input => input.disabled = false);
+                    executeBtn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
